@@ -13,13 +13,20 @@
         @keyframes typingBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans flex h-screen overflow-hidden">
+<body class="bg-gray-900 text-gray-100 font-sans flex h-screen overflow-hidden relative">
+
+    <div id="sidebarBackdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden transition-opacity duration-300"></div>
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-950 border-r border-gray-800 transform -translate-x-full lg:translate-x-0 lg:static lg:inset-auto transition-transform duration-300 ease-in-out flex flex-col justify-between">
         <div class="p-5 flex flex-col h-full overflow-y-auto">
-            <div class="mb-6">
-                <h1 class="text-2xl font-black text-blue-500 tracking-wider">CAMPUS AI</h1>
-                <p class="text-xs text-gray-500 mt-1">Intelligence Layer for Higher Ed</p>
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-black text-blue-500 tracking-wider">CAMPUS AI</h1>
+                    <p class="text-xs text-gray-500 mt-1">Intelligence Layer for Higher Ed</p>
+                </div>
+                <button onclick="toggleSidebar()" class="lg:hidden text-gray-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
 
             <div class="mb-6 p-3 bg-gray-900 rounded-lg border border-gray-800">
@@ -55,8 +62,8 @@
     </aside>
 
     <main class="flex-1 flex flex-col relative w-full overflow-hidden bg-gray-900">
-        <header class="h-16 border-b border-gray-800 flex items-center justify-between px-4 bg-gray-950">
-            <button onclick="toggleSidebar()" class="lg:hidden text-gray-400 hover:text-white text-xl">
+        <header class="h-16 border-b border-gray-800 flex items-center justify-between px-4 bg-gray-950 flex-shrink-0">
+            <button onclick="toggleSidebar()" class="lg:hidden text-gray-400 hover:text-white text-xl p-2 -ml-2">
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div class="flex items-center gap-4 ml-auto">
@@ -71,7 +78,7 @@
             </div>
         </header>
 
-        <section class="p-4 grid grid-cols-3 gap-4 bg-gray-900/50 border-b border-gray-800">
+        <section class="p-4 grid grid-cols-3 gap-4 bg-gray-900/50 border-b border-gray-800 flex-shrink-0">
           <div class="bg-gray-950 p-3 rounded-xl border border-gray-800">
               <span class="text-xs text-gray-400 block">Uploaded Docs</span>
               <span id="statDocs" class="text-xl font-bold text-blue-400">0</span>
@@ -102,7 +109,7 @@
             </div>
         </div>
 
-        <footer class="p-4 bg-gray-950 border-t border-gray-800">
+        <footer class="p-4 bg-gray-950 border-t border-gray-800 flex-shrink-0">
             <div class="max-w-3xl mx-auto flex items-center gap-2 bg-gray-900 p-2 rounded-xl border border-gray-700 shadow-inner">
                 <label class="cursor-pointer text-gray-400 hover:text-blue-400 p-2 text-lg transition" title="Upload Files / Take Picture">
                     <i class="fa-solid fa-camera"></i>
@@ -121,7 +128,15 @@
 
     <script>
         let currentStudyMode = "exam_prep";
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
+
+        function toggleSidebar() { 
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+
         function setStudyMode(mode, targetBtn) {
             currentStudyMode = mode;
             document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -130,7 +145,13 @@
             });
             targetBtn.classList.add('bg-blue-600', 'text-white');
             targetBtn.classList.remove('text-gray-400', 'hover:bg-gray-900');
+            
+            // Auto close sidebar on mobile choice
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
         }
+
         function executeQuery() {
             const input = document.getElementById('userInput');
             if(!input.value.trim()) return;
@@ -143,11 +164,13 @@
                 renderMessage("Interface running beautifully! Connect your live backend API URL to start running real contextual AI responses.", 'ai');
             }, 1200);
         }
+
         function handleFileUpload(input) {
             if(!input.files.length) return;
             renderMessage(`Uploaded asset: ${input.files[0].name}. Document text parsed into viewport layout successfully.`, 'ai');
             document.getElementById('statDocs').innerText = "1";
         }
+
         function renderMessage(text, sender) {
             const container = document.getElementById('chatTerminal');
             const wrapper = document.createElement('div');
